@@ -24,7 +24,11 @@ object TrackerThread : Thread() {
     val selectVariants = chatSelectVariants.orEmpty()
 
     fun putSubscription(titleSource: AbstractSource, chatId: Long) {
-        subscriptions[titleSource]?.let { it.add(chatId) } ?: subscriptions.put(titleSource, mutableListOf(chatId))
+        val list = subscriptions[titleSource]
+        if (list == null) {
+            titleSource.lastCheckedChapter = titleSource.getLastChapter()
+            subscriptions.put(titleSource, mutableListOf(chatId))
+        } else list.add(chatId)
     }
 
     fun removeSubscription(titleSource: AbstractSource, chatId: Long) {
@@ -63,7 +67,10 @@ object TrackerThread : Thread() {
     }
 
     fun <T : Any?> changeMap(key: Long, value: T?, map: MutableMap<Long, T>) {
-        synchronized(map) { value?.let { map.put(key, value) } ?: map.remove(key) }
+        synchronized(map) {
+            if (value != null) map.put(key, value)
+            else map.remove(key)
+        }
     }
 
     override fun run() {

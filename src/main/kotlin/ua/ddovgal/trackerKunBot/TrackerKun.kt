@@ -10,7 +10,6 @@ import ua.ddovgal.trackerKunBot.service.BOT_TOKEN
 import ua.ddovgal.trackerKunBot.service.BOT_USERNAME
 import ua.ddovgal.trackerKunBot.service.TrackerThread
 
-
 class TrackerKun : TelegramLongPollingBot() {
 
     val trackerThread = TrackerThread
@@ -37,13 +36,35 @@ class TrackerKun : TelegramLongPollingBot() {
     fun sendSimpleMessage(text: String, chatId: Long) {
         val sendMessageRequest = SendMessage()
         sendMessageRequest.chatId = chatId.toString()
-        sendMessageRequest.text = text
-        try {
-            sendMessage(sendMessageRequest)
-        } catch (e: TelegramApiException) {
-            e.printStackTrace()
+        if (text.length < 4096) {
+            sendMessageRequest.text = text
+            try {
+                sendMessage(sendMessageRequest)
+            } catch (e: TelegramApiException) {
+                e.printStackTrace()
+            }
+        } else {
+            val lines = text.split("\n")
+            var piece = ""
+            for (line in lines) {
+                if (piece.length < 4096 - line.length) piece += "$line\n"
+                else {
+                    sendMessageRequest.text = piece
+                    try {
+                        sendMessage(sendMessageRequest)
+                    } catch (e: TelegramApiException) {
+                        e.printStackTrace()
+                    }
+                    piece = line
+                }
+            }
+            sendMessageRequest.text = piece
+            try {
+                sendMessage(sendMessageRequest)
+            } catch (e: TelegramApiException) {
+                e.printStackTrace()
+            }
         }
-
     }
 
     fun finalize() {

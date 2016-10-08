@@ -12,7 +12,7 @@ class DeleteCommand(params: List<String>) : ReservedCommand(params) {
         trackerKun.trackerThread.changeVariants(chatId, subscriptions)
 
         val message = subscriptions
-                .mapIndexed { i, source -> "/$i [${source.sourceName}]${source.title}" }
+                .mapIndexed { i, source -> "/${i + 1} [${source.sourceName}]${source.title}" }
                 .joinToString(separator = "\n")
         trackerKun.sendSimpleMessage(message, chatId)
     }

@@ -12,16 +12,18 @@ class SelectionCommand(val selectedNumber: Int) : Command {
     override fun exec(chatId: Long, trackerKun: TrackerKun) {
         when (trackerKun.trackerThread.states[chatId]) {
             BotState.WAITING_FOR_ADD_SELECTION -> {
+                trackerKun.trackerThread.changeState(chatId, BotState.WAITING_FOR_ANY)
                 val sources = trackerKun.trackerThread.selectVariants[chatId] as List<*>
-                val selected = sources[selectedNumber] as AbstractSource
+                val selected = sources[selectedNumber - 1] as AbstractSource
                 trackerKun.trackerThread.putSubscription(selected, chatId)
                 val message = "Great !\n" +
                         "${selected.title} was added to your observable list ${Emoji.THUMBS_UP_SIGN}"
                 trackerKun.sendSimpleMessage(message, chatId)
             }
             BotState.WAITING_FOR_DELETE_SELECTION -> {
+                trackerKun.trackerThread.changeState(chatId, BotState.WAITING_FOR_ANY)
                 val sources = trackerKun.trackerThread.selectVariants[chatId] as List<*>
-                val selected = sources[selectedNumber] as AbstractSource
+                val selected = sources[selectedNumber - 1] as AbstractSource
                 trackerKun.trackerThread.removeSubscription(selected, chatId)
                 val message = "Yep, ${selected.title} sadly has gone away ${Emoji.CRYING_FACE}"
                 trackerKun.sendSimpleMessage(message, chatId)

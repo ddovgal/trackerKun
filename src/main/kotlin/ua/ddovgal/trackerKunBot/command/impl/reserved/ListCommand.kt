@@ -10,8 +10,11 @@ class ListCommand(params: List<String>) : ReservedCommand(params) {
 
         val subscriptions = trackerKun.trackerThread.subscriptionForId(chatId)
 
-        val message = subscriptions
-                .mapIndexed { i, source -> "[${source.sourceName}]${source.title}" }
+        val message: String
+        if (subscriptions.isEmpty()) {
+            message = "Your list is empty"
+        } else message = subscriptions
+                .mapIndexed { i, source -> "${i + 1}.[${source.sourceName}] ${source.title}" }
                 .joinToString(separator = "\n")
         trackerKun.sendSimpleMessage(message, chatId)
     }

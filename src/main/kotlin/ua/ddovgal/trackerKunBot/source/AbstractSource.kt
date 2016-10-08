@@ -17,5 +17,5 @@ abstract class AbstractSource {
 
     abstract fun getLastChapter(): String
     abstract fun getLastChapterURL(): String
-    abstract fun searchForTitle(name: String): List<Triple<String, String, String>>
+    abstract fun searchForTitle(name: String): List<AbstractSource>
 }

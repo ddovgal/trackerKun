@@ -12,12 +12,13 @@ class PlainTextCommand(val text: String) : Command {
     override fun exec(chatId: Long, trackerKun: TrackerKun) {
         when (trackerKun.trackerThread.states[chatId]) {
             BotState.WAITING_FOR_ADD_STRING -> {
+                trackerKun.trackerThread.changeState(chatId, BotState.WAITING_FOR_ADD_SELECTION)
                 val fond = ReadMangaSource().searchForTitle(text)
                         .plus(MintMangaSource().searchForTitle(text))
                 trackerKun.trackerThread.changeVariants(chatId, fond)
 
                 val message = fond
-                        .mapIndexed { i, triple -> "/$i [${triple.first}]${triple.second}" }
+                        .mapIndexed { i, mangaSource -> "/${i + 1} [${mangaSource.sourceName}]${mangaSource.title}" }
                         .joinToString(separator = "\n")
                 trackerKun.sendSimpleMessage(message, chatId)
             }
