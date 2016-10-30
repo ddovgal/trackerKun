@@ -1,7 +1,10 @@
 package ua.ddovgal.trackerKunBot.command
 
-import ua.ddovgal.trackerKunBot.TrackerKun
-
 interface Command {
-    fun exec(chatId: Long, trackerKun: TrackerKun)
+    fun exec()
+
+    /**
+     * Method worries about existence of the message\text by self. Absolutely all check is HIS task
+     */
+    fun getIfSuitable(inputData: CommandInputData): Command?
 }

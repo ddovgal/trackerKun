@@ -1,21 +1,58 @@
 package ua.ddovgal.trackerKunBot.command.impl.reserved
 
-import ua.ddovgal.trackerKunBot.TrackerKun
-import ua.ddovgal.trackerKunBot.command.BotState
-import ua.ddovgal.trackerKunBot.command.ReservedCommand
+import ua.ddovgal.trackerKunBot.command.*
+import ua.ddovgal.trackerKunBot.service.Emoji
 
-class ListCommand(params: List<String>) : ReservedCommand(params) {
-    override fun exec(chatId: Long, trackerKun: TrackerKun) {
-        trackerKun.trackerThread.changeState(chatId, BotState.WAITING_FOR_ANY)
 
-        val subscriptions = trackerKun.trackerThread.subscriptionForId(chatId)
+class ListCommand : ParameterNeedCommand, ReservedCommand {
+
+    constructor(inputData: CommandInputData) : super(inputData)
+
+    override val commandName: String = "list"
+
+    override val chatId = inputData.chatIdFromMessage
+
+    override val stateNeed = SubscriberState.WAITING_FOR_ANYTHING
+
+    override fun extractCommandName(inputData: CommandInputData) = inputData.commandNameFromMessage
+
+    override fun extractState(inputData: CommandInputData) = inputData.chatStateFromMessage
+
+    override fun fabricMethod(inputData: CommandInputData) = ListCommand(inputData)
+
+    override fun getIfSuitable(inputData: CommandInputData): Command? {
+        val afterCommandNameCheck = super<ReservedCommand>.getIfSuitable(inputData)
+        var afterChatIdCheck: Command? = null
+        afterCommandNameCheck?.let {
+            afterChatIdCheck = super<ParameterNeedCommand>.getIfSuitable(inputData)
+        }
+        afterChatIdCheck?.let {
+            if (it == afterCommandNameCheck) return it
+        }
+        return null
+    }
+
+    override fun exec() {
+        val subscriptions = dbConnector.getSubscriptionsOfSubscriber(chatId)
 
         val message: String
         if (subscriptions.isEmpty()) {
-            message = "Your list is empty"
+            message = "Your list is empty ${Emoji.CONFOUNDED_FACE}"
         } else message = subscriptions
-                .mapIndexed { i, source -> "${i + 1}.[${source.sourceName}] ${source.title}" }
+                .mapIndexed { i, title ->
+                    "${Emoji.PAGE_WITH_CURL}${i + 1}. " +
+                            "[${title.source.name}/${title.source.language.shortName}] ${title.name}"
+                }
                 .joinToString(separator = "\n")
+
         trackerKun.sendSimpleMessage(message, chatId)
     }
+
+    //region For CommandFactory list only
+    private constructor() : super()
+
+    companion object {
+        val empty = ListCommand()
+    }
+    //endregion
 }

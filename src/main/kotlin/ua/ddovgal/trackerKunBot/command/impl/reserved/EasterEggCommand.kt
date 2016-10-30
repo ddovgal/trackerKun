@@ -4,11 +4,11 @@ import ua.ddovgal.trackerKunBot.command.*
 import ua.ddovgal.trackerKunBot.service.Emoji
 
 
-class DeleteCommand : ParameterNeedCommand, ReservedCommand {
+class EasterEggCommand : ParameterNeedCommand, ReservedCommand {
 
     constructor(inputData: CommandInputData) : super(inputData)
 
-    override val commandName: String = "delete"
+    override val commandName: String = "easterEgg"
 
     override val chatId = inputData.chatIdFromMessage
 
@@ -18,7 +18,7 @@ class DeleteCommand : ParameterNeedCommand, ReservedCommand {
 
     override fun extractState(inputData: CommandInputData) = inputData.chatStateFromMessage
 
-    override fun fabricMethod(inputData: CommandInputData) = DeleteCommand(inputData)
+    override fun fabricMethod(inputData: CommandInputData) = EasterEggCommand(inputData)
 
     override fun getIfSuitable(inputData: CommandInputData): Command? {
         val afterCommandNameCheck = super<ReservedCommand>.getIfSuitable(inputData)
@@ -33,24 +33,29 @@ class DeleteCommand : ParameterNeedCommand, ReservedCommand {
     }
 
     override fun exec() {
-        val subscriptions = dbConnector.getSubscriptionsOfSubscriber(chatId)
-
-        val message = subscriptions
-                .mapIndexed { i, title ->
-                    "${Emoji.PAGE_WITH_CURL}/${i + 1} " +
-                            "[${title.source.name}/${title.source.language.shortName}] ${title.name}"
-                }
-                .joinToString(separator = "\n")
-
-        trackerKun.sendSimpleMessage(message, chatId)
-        dbConnector.updateSubscribersState(chatId, SubscriberState.WAITING_FOR_REMOVE_SELECTION)
+        trackerKun.sendSimpleMessage("Lol, you got me ${Emoji.ROCKET}", chatId)
     }
 
     //region For CommandFactory list only
     private constructor() : super()
 
     companion object {
-        val empty = DeleteCommand()
+        val empty = EasterEggCommand()
     }
     //endregion
 }
+
+/*
+* // getIfSuitable realization for ParameterNeedCommand-ReservedCommand
+    override fun getIfSuitable(inputData: CommandInputData): Command? {
+        val afterCommandNameCheck = super<ReservedCommand>.getIfSuitable(inputData)
+        var afterChatIdCheck: Command? = null
+        afterCommandNameCheck?.let {
+            afterChatIdCheck = super<ParameterNeedCommand>.getIfSuitable(inputData)
+        }
+        afterChatIdCheck?.let {
+            if (it == afterCommandNameCheck) return it
+        }
+        return null
+    }
+* */

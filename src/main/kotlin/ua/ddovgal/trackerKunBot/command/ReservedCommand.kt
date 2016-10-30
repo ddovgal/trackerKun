@@ -1,3 +1,11 @@
 package ua.ddovgal.trackerKunBot.command
 
-abstract class ReservedCommand(val params: List<String>) : Command
+interface ReservedCommand : Command {
+    val commandName: String
+
+    fun fabricMethod(inputData: CommandInputData): ReservedCommand
+    fun extractCommandName(inputData: CommandInputData): String?
+
+    override fun getIfSuitable(inputData: CommandInputData): Command? =
+            if (commandName == extractCommandName(inputData)) fabricMethod(inputData) else null
+}
