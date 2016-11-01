@@ -21,29 +21,30 @@ class DeleteCommand : ParameterNeedCommand, ReservedCommand {
     override fun fabricMethod(inputData: CommandInputData) = DeleteCommand(inputData)
 
     override fun getIfSuitable(inputData: CommandInputData): Command? {
-        val afterCommandNameCheck = super<ReservedCommand>.getIfSuitable(inputData)
-        var afterChatIdCheck: Command? = null
-        afterCommandNameCheck?.let {
-            afterChatIdCheck = super<ParameterNeedCommand>.getIfSuitable(inputData)
-        }
-        afterChatIdCheck?.let {
-            if (it == afterCommandNameCheck) return it
-        }
-        return null
+        val firstCheck = super<ReservedCommand>.getIfSuitable(inputData)
+        if (firstCheck != null
+                && super<ParameterNeedCommand>.getIfSuitable(inputData) != null) return firstCheck
+        else return null
     }
 
     override fun exec() {
         val subscriptions = dbConnector.getSubscriptionsOfSubscriber(chatId)
 
-        val message = subscriptions
-                .mapIndexed { i, title ->
-                    "${Emoji.PAGE_WITH_CURL}/${i + 1} " +
-                            "[${title.source.name}/${title.source.language.shortName}] ${title.name}"
-                }
-                .joinToString(separator = "\n")
+        val message: String
+
+        if (subscriptions.isEmpty()) {
+            message = "There is nothing in your observable list ${Emoji.PENSIVE_FACE}"
+        } else {
+            val nothing = "${Emoji.CROSS_MARK}/0 I changed my mind :D\n"
+
+            message = nothing + subscriptions.mapIndexed { i, title ->
+                "${Emoji.PAGE_WITH_CURL}/${i + 1} [${title.source.name}/" +
+                        "${title.source.language.shortName}] ${title.name}"
+            }.joinToString(separator = "\n")
+            dbConnector.updateSubscribersState(chatId, SubscriberState.WAITING_FOR_REMOVE_SELECTION)
+        }
 
         trackerKun.sendSimpleMessage(message, chatId)
-        dbConnector.updateSubscribersState(chatId, SubscriberState.WAITING_FOR_REMOVE_SELECTION)
     }
 
     //region For CommandFactory list only

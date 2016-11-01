@@ -1,16 +1,15 @@
 package ua.ddovgal.trackerKunBot.entity
 
-import com.j256.ormlite.field.DatabaseField
-import com.j256.ormlite.table.DatabaseTable
+import ua.ddovgal.trackerKunBot.service.TryCaughtException
 import ua.ddovgal.trackerKunBot.source.Language
 import java.util.*
 
-@DatabaseTable
+//@DatabaseTable
 abstract class Source {
 
-    @DatabaseField(id = true) val url: String
-    @DatabaseField val name: String
-    @DatabaseField val language: Language
+    /*@DatabaseField(id = true) */val url: String
+    /*@DatabaseField */val name: String
+    /*@DatabaseField */val language: Language
 
     constructor() : this("", "", Language.ENGLISH)
     constructor(url: String, name: String, language: Language) {
@@ -21,16 +20,19 @@ abstract class Source {
 
     /**
      * @return Last chapter release url, or 'null' if it not exist
+     * @throws [TryCaughtException] if there is no chapters
      */
     abstract fun checkLastChapterUrl(titleUrl: String): String?
 
     /**
      * @return Last chapter name, or 'null' if it not exist
+     * @throws [NoSuchElementException] if there is no chapters
      */
     abstract fun checkLastChapterName(titleUrl: String): String?
 
     /**
      * @return Last chapter release date, or 'null' if it not exist
+     * @throws [NoSuchElementException] if there is no chapters
      */
     abstract fun checkLastChapterReleaseDate(titleUrl: String): Date?
 

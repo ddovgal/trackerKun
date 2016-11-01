@@ -25,8 +25,8 @@ open class ReadMangaSource : Source {
             val titleNode = it.child(2).child(1).child(0)
             val titleName = titleNode.textNodes()[0].text()
             val titleUrl = titleNode.attr("href")
-            val rssUrl = "$url/rss/manga?name=${titleUrl.replace("$url/", "")}"
-            Title(titleName, rssUrl, this)
+            val rssUrl = "$url/rss/manga?name=${titleUrl.substring(1)}"
+            Title(titleName, rssUrl)
         }
     }
 

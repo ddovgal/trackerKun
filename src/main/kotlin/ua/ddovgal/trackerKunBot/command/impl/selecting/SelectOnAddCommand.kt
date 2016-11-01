@@ -1,7 +1,10 @@
 package ua.ddovgal.trackerKunBot.command.impl.selecting
 
 import ua.ddovgal.trackerKunBot.command.*
+import ua.ddovgal.trackerKunBot.entity.Title
 import ua.ddovgal.trackerKunBot.service.Emoji
+import ua.ddovgal.trackerKunBot.service.TryCaughtException
+import java.util.*
 
 
 class SelectOnAddCommand : ParameterNeedCommand, SelectingCommand {
@@ -17,23 +20,52 @@ class SelectOnAddCommand : ParameterNeedCommand, SelectingCommand {
     override fun fabricMethod(inputData: CommandInputData) = SelectOnAddCommand(inputData)
 
     override fun getIfSuitable(inputData: CommandInputData): Command? {
-        val afterSelectingCheck = super<SelectingCommand>.getIfSuitable(inputData)
-        var afterChatIdCheck: Command? = null
-        afterSelectingCheck?.let {
-            afterChatIdCheck = super<ParameterNeedCommand>.getIfSuitable(inputData)
-        }
-        afterChatIdCheck?.let {
-            if (it == afterSelectingCheck) return it
-        }
-        return null
+        val firstCheck = super<SelectingCommand>.getIfSuitable(inputData)
+        if (firstCheck != null
+                && super<ParameterNeedCommand>.getIfSuitable(inputData) != null) return firstCheck
+        else return null
     }
 
     override fun exec() {
-        val selected = dbConnector.getSpecificVariantOfSubscriber(chatId, selected.toLong())
-        dbConnector.subscribe(selected, chatId)
-        dbConnector.removeVariantsOfSubscriber(chatId)
-        val message = "Great ${Emoji.THUMBS_UP_SIGN}\n" +
-                "${selected.name} was added to your observable list"
+
+        if (selected == 0) {
+            trackerKun.sendSimpleMessage("Okay... ${Emoji.DISAPPOINTED_BUT_RELIEVED_FACE}", chatId)
+            dbConnector.removeVariantsOfSubscriber(chatId)
+            dbConnector.updateSubscribersState(chatId, SubscriberState.WAITING_FOR_ANYTHING)
+            return
+        }
+
+        val selected: Title
+        try {
+            selected = dbConnector.getSpecificVariantOfSubscriber(chatId, this.selected.toLong())
+        } catch(e: NoSuchElementException) {
+            trackerKun.sendSimpleMessage("Wrong number ${Emoji.FACE_SCREAMING_IN_FEAR}", chatId)
+            dbConnector.updateSubscribersState(chatId, SubscriberState.WAITING_FOR_ANYTHING)
+            return
+        }
+
+        //if it was jut added/never got updates
+        if (selected.lastCheckedChapterUrl == "") {
+            try {
+                selected.checkLastChapterUrl()?.let { selected.lastCheckedChapterUrl = it }
+                selected.checkLastChapterName()?.let { selected.lastCheckedChapterName = it }
+                selected.checkLastChapterReleaseDate()?.let { selected.lastCheckedChapterReleaseDate = it }
+                //don't need to update, because 'dbConnector.subscribe(selected, chatId)' will do it(subscribersCount++)
+                //dbConnector.updateTitle(selected)
+            } catch(e: Exception) {
+                logger.warn("Empty title has increased it's subscribers count", e)
+            }
+        }
+
+        val message = try {
+            dbConnector.subscribe(selected, chatId)
+            "Great ${Emoji.THUMBS_UP_SIGN}\n" +
+                    "${selected.name} was added to your observable list"
+        } catch(e: TryCaughtException) {
+            "It seems, that you already have ${selected.name} in your observable list ${Emoji.SMILING_FACE_WITH_SMILING_EYES}"
+        } finally {
+            dbConnector.removeVariantsOfSubscriber(chatId)
+        }
         trackerKun.sendSimpleMessage(message, chatId)
         dbConnector.updateSubscribersState(chatId, SubscriberState.WAITING_FOR_ANYTHING)
     }

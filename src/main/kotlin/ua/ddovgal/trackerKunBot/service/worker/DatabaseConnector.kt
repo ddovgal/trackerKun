@@ -8,7 +8,10 @@ import com.j256.ormlite.table.TableUtils
 import ua.ddovgal.trackerKunBot.DATABASE_DRIVER
 import ua.ddovgal.trackerKunBot.DATABASE_URL
 import ua.ddovgal.trackerKunBot.command.SubscriberState
-import ua.ddovgal.trackerKunBot.entity.*
+import ua.ddovgal.trackerKunBot.entity.Subscriber
+import ua.ddovgal.trackerKunBot.entity.Subscription
+import ua.ddovgal.trackerKunBot.entity.Title
+import ua.ddovgal.trackerKunBot.entity.Variant
 import ua.ddovgal.trackerKunBot.service.TryCaughtException
 import java.net.URI
 import java.sql.SQLException
@@ -17,7 +20,6 @@ object DatabaseConnector {
 
     private val connection: ConnectionSource
     private val subscriberDao: Dao<Subscriber, Long>
-    private val sourceDao: Dao<Source, String>
     private val titleDao: Dao<Title, String>
     private val subscriptionDao: Dao<Subscription, *>
     private val variantDao: Dao<Variant, *>
@@ -34,15 +36,13 @@ object DatabaseConnector {
         connection = JdbcConnectionSource(dbUrl, username, password)
 
         subscriberDao = DaoManager.createDao(connection, Subscriber::class.java)
-        sourceDao = DaoManager.createDao(connection, Source::class.java)
         titleDao = DaoManager.createDao(connection, Title::class.java)
         subscriptionDao = DaoManager.createDao(connection, Subscription::class.java)
         variantDao = DaoManager.createDao(connection, Variant::class.java)
 
-        sourceDao.setObjectCache(true)
         titleDao.setObjectCache(true)
+        variantDao.setObjectCache(true)
 
-        TableUtils.createTableIfNotExists(connection, Source::class.java)
         TableUtils.createTableIfNotExists(connection, Subscriber::class.java)
         TableUtils.createTableIfNotExists(connection, Title::class.java)
         TableUtils.createTableIfNotExists(connection, Subscription::class.java)
@@ -84,15 +84,13 @@ object DatabaseConnector {
     fun subscribe(title: Title, chatId: Long) {
         val subscriber = subscriberDao.queryForId(chatId)
 
-        title.subscribersCount++
-        title.asVariantUsingCount--
-        titleDao.update(title)
-
-        subscriber.subscriptionCount++
-        subscriberDao.update(subscriber)
-
         try {
-            subscriptionDao.create(Subscription(subscriber, title))
+            subscriptionDao.create(Subscription(subscriber, title, System.currentTimeMillis()))
+
+            title.subscribersCount++
+            subscriber.subscriptionCount++
+            subscriberDao.update(subscriber)
+            titleDao.update(title)
         } catch(e: SQLException) {
             throw TryCaughtException("It seems, that [${subscriber.chatId}] user is already have [${title.url}] subscription", e)
         }
@@ -104,7 +102,7 @@ object DatabaseConnector {
         deleteBuilder.where()
                 .eq(Subscription.TITLE_COLUMN_NAME, title)
                 .and()
-                .eq(Subscription.SUBSCRIBER_COLUMN_NAME, subscriber).query()
+                .eq(Subscription.SUBSCRIBER_COLUMN_NAME, subscriber)
         deleteBuilder.delete()
 
         title.subscribersCount--
@@ -119,65 +117,80 @@ object DatabaseConnector {
         else subscriberDao.update(subscriber)*/
     }
 
-    private inline fun <reified T> getSomeDateOfSubscriber(chatId: Long, position: Long?): List<Title> {
-        val subscriber = subscriberDao.queryForId(chatId)
-
-        //empty yet created Dao for some table class
-        val dao = DaoManager.lookupDao(connection, T::class.javaClass)
-
-        val somethingQueryBuilder = dao.queryBuilder()
+    fun getSpecificSubscriptionOfSubscriber(chatId: Long, position: Long): Title {
+        val subscriptionQueryBuilder = subscriptionDao.queryBuilder()
         val titleQueryBuilder = titleDao.queryBuilder()
 
-        //if position != null then we need a specific position of 'Something', not all them
-        position?.let { somethingQueryBuilder.limit(1).offset(it - 1) }
+        subscriptionQueryBuilder.orderBy(Subscription.TIME_COLUMN_NAME, true)
+                .where().eq(Subscription.SUBSCRIBER_COLUMN_NAME, chatId)
 
-        somethingQueryBuilder.where().eq(Subscription.SUBSCRIBER_COLUMN_NAME, subscriber)
+        val result = titleQueryBuilder.join(subscriptionQueryBuilder).limit(1).offset(position - 1).query()
+        return result.first()
+    }
 
-        // if position != null (need a specific position of 'Something', not all them)
-        // result will contain 1 element maximum, cause limit = 1, so in place,
-        // we use this method to found 'Something' at {position}, we need just call '.first()'
-        val result = titleQueryBuilder.join(somethingQueryBuilder).query()
+    fun getSubscriptionsOfSubscriber(chatId: Long): List<Title> {
+        val subscriptionQueryBuilder = subscriptionDao.queryBuilder()
+        val titleQueryBuilder = titleDao.queryBuilder()
+
+        subscriptionQueryBuilder.where().eq(Subscription.SUBSCRIBER_COLUMN_NAME, chatId)
+        subscriptionQueryBuilder.orderBy(Subscription.TIME_COLUMN_NAME, true)
+
+        val result = titleQueryBuilder.join(subscriptionQueryBuilder).query()
         return result
     }
 
-    fun getSpecificSubscriptionOfSubscriber(chatId: Long, position: Long): Title =
-            getSomeDateOfSubscriber<Subscription>(chatId, position).first()
+    fun getSpecificVariantOfSubscriber(chatId: Long, position: Long): Title {
+        val variantQueryBuilder = variantDao.queryBuilder()
+        val titleQueryBuilder = titleDao.queryBuilder()
 
-    fun getSubscriptionsOfSubscriber(chatId: Long): List<Title> =
-            getSomeDateOfSubscriber<Subscription>(chatId, null)
+        variantQueryBuilder.where()
+                .eq(Variant.SUBSCRIBER_COLUMN_NAME, chatId)
+                .and()
+                .eq(Variant.POSITION_COLUMN_NAME, position)
 
-    fun getSpecificVariantOfSubscriber(chatId: Long, position: Long): Title =
-            getSomeDateOfSubscriber<Variant>(chatId, position).first()
-
-//    fun getVariantsOfSubscriber(chatId: Long): List<Title> =
-//            getSomeDateOfSubscriber<Variant>(chatId, null)
+        val result = titleQueryBuilder.join(variantQueryBuilder).query().first()
+        return result
+    }
 
     fun putVariantsForSubscriber(chatId: Long, variants: List<Title>) {
-        val subscriber = subscriberDao.queryForId(chatId)
-        val variantEntities = variants.map {
-            var found = titleDao.queryForSameId(it)
-            if (found == null) found = titleDao.createIfNotExists(it)
-            found.asVariantUsingCount++
-            titleDao.update(found)
-            Variant(subscriber, found)
+        //empty Subscriber. It need only chatId
+        val subscriber = Subscriber(chatId = chatId)
+        val variantEntities = variants.mapIndexed { i, it ->
+            var title = titleDao.queryForId(it.url)
+
+            if (title == null) {
+                title = it
+                titleDao.create(title)
+            } else {
+                title.asVariantUsingCount++
+                titleDao.update(title)
+            }
+
+            Variant(subscriber, title, i + 1)
         }
         variantDao.create(variantEntities)
     }
 
     fun removeVariantsOfSubscriber(chatId: Long) {
-        val subscriber = subscriberDao.queryForId(chatId)
-        val variantDeleteBuilder = variantDao.queryBuilder()
-        val variantsToDelete = variantDeleteBuilder.where().eq(Subscription.SUBSCRIBER_COLUMN_NAME, subscriber).query()
-        val titlesToDelete = variantsToDelete.filter {
-            it.title.asVariantUsingCount--
-            if (it.title.asVariantUsingCount == 0L && it.title.subscribersCount == 0L) true
+        val variantQueryBuilder = variantDao.queryBuilder()
+        val titleQueryBuilder = titleDao.queryBuilder()
+
+        variantQueryBuilder.where().eq(Subscription.SUBSCRIBER_COLUMN_NAME, chatId)
+        val variantTitlesToDelete = titleQueryBuilder.join(variantQueryBuilder).query()
+
+        val titlesToDelete = variantTitlesToDelete.filter {
+            it.asVariantUsingCount--
+            if (it.asVariantUsingCount == 0L && it.subscribersCount == 0L) true
             else {
-                titleDao.update(it.title)
+                titleDao.update(it)
                 false
             }
-        }.map { it.title }
+        }
         titleDao.delete(titlesToDelete)
-        variantDao.delete(variantsToDelete)
+
+        val variantDeleteBuilder = variantDao.deleteBuilder()
+        variantDeleteBuilder.where().eq(Subscription.SUBSCRIBER_COLUMN_NAME, chatId)
+        variantDeleteBuilder.delete()
     }
 
     fun changeSubscriptionStateOfSubscriber(chatId: Long): Boolean {

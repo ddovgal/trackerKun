@@ -20,9 +20,17 @@ object CommandFactory {
         val commandInputData = CommandInputData(update)
         val possibleCommands = mutableListOf<Command>()
 
-        allCommandsTogether.forEach {
-            val commandCandidate = it.getIfSuitable(commandInputData)
-            commandCandidate?.let { possibleCommands.add(it) }
+        //just for CancelCommand's return@loop
+        run loop@ {
+            allCommandsTogether.forEach {
+                val commandCandidate = it.getIfSuitable(commandInputData)
+                commandCandidate?.let {
+                    possibleCommands.add(it)
+                    //CancelCommand have HIGH priority
+                    //CancelCommand is first in allCommandsTogether
+                    if (it is CancelCommand) return@loop
+                }
+            }
         }
 
         when (possibleCommands.size) {
@@ -42,6 +50,7 @@ object CommandFactory {
      */
     // contains empty variants of commands
     private val reservedCommands = listOf<ReservedCommand>(
+            CancelCommand.empty,
             AddCommand.empty,
             DeleteCommand.empty,
             EasterEggCommand.empty,

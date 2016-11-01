@@ -21,15 +21,10 @@ class ListCommand : ParameterNeedCommand, ReservedCommand {
     override fun fabricMethod(inputData: CommandInputData) = ListCommand(inputData)
 
     override fun getIfSuitable(inputData: CommandInputData): Command? {
-        val afterCommandNameCheck = super<ReservedCommand>.getIfSuitable(inputData)
-        var afterChatIdCheck: Command? = null
-        afterCommandNameCheck?.let {
-            afterChatIdCheck = super<ParameterNeedCommand>.getIfSuitable(inputData)
-        }
-        afterChatIdCheck?.let {
-            if (it == afterCommandNameCheck) return it
-        }
-        return null
+        val firstCheck = super<ReservedCommand>.getIfSuitable(inputData)
+        if (firstCheck != null
+                && super<ParameterNeedCommand>.getIfSuitable(inputData) != null) return firstCheck
+        else return null
     }
 
     override fun exec() {

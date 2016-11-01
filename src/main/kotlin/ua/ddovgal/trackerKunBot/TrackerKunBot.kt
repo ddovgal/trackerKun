@@ -1,6 +1,5 @@
 package ua.ddovgal.trackerKunBot
 
-import org.apache.log4j.PropertyConfigurator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.api.methods.send.SendMessage
@@ -22,7 +21,6 @@ object TrackerKunBot : TelegramLongPollingBot() {
     private val PERIOD_OF_INSPECTION_IN_MINUTES = 15L
 
     init {
-        PropertyConfigurator.configure("log4j.properties")
         executor.scheduleAtFixedRate(backgroundTask, 0, PERIOD_OF_INSPECTION_IN_MINUTES, TimeUnit.MINUTES)
     }
 
