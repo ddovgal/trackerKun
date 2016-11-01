@@ -41,7 +41,6 @@ object DatabaseConnector {
         variantDao = DaoManager.createDao(connection, Variant::class.java)
 
         titleDao.setObjectCache(true)
-        variantDao.setObjectCache(true)
 
         TableUtils.createTableIfNotExists(connection, Subscriber::class.java)
         TableUtils.createTableIfNotExists(connection, Title::class.java)
