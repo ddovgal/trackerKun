@@ -99,6 +99,9 @@
                 <artifactId>appassembler-maven-plugin</artifactId>
                 <version>1.1.1</version>
                 <configuration>
+                    <extraJvmArguments>-DCREATOR_CHAT_ID=$CREATOR_CHAT_ID
+                        -DLOG4J_LOGGER_BOT_TOKEN=$LOG4J_LOGGER_BOT_TOKEN
+                    </extraJvmArguments>
                     <assembleDirectory>target</assembleDirectory>
                     <programs>
                         <program>

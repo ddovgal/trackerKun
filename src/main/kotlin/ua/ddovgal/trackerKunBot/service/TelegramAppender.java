@@ -5,8 +5,8 @@ import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.URL;
 
 public class TelegramAppender extends AppenderSkeleton {
@@ -43,10 +43,10 @@ public class TelegramAppender extends AppenderSkeleton {
                 connection.setRequestMethod("POST");
                 connection.setRequestProperty("Content-Type", "application/json");
                 connection.setDoOutput(true);
-                final OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+                final DataOutputStream writer = new DataOutputStream(connection.getOutputStream());
                 final String message = (appName != null ? "[" + appName + "]:   " : "") + layout.format(loggingEvent);
                 final String outString = "{" + "\"chat_id\":" + receiverId + "," + "\"text\":\"" + message + "\"}";
-                writer.write(outString);
+                writer.write(outString.getBytes("UTF-8"));
                 writer.flush();
                 writer.close();
                 final int responseCode = connection.getResponseCode();
