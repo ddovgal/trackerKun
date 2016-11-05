@@ -27,7 +27,7 @@ class BackgroundMonitor : Runnable {
             try {
                 latestChapterUrl = it.checkLastChapterUrl() ?: throw RuntimeException("No url found in entry")
             } catch(e: TryCaughtException) {
-                logger.warn("There is no chapters in [${it.name}/${it.url}]", e)
+                logger.warn("There is no chapters in [${it.name}/${it.url}]")
                 return@forEach
             } catch (e: Exception) {
                 logger.error("Cant load latest chapter's URL of [${it.name}/${it.url}]", e)
@@ -40,7 +40,11 @@ class BackgroundMonitor : Runnable {
             if (latestChapterUrl != it.lastCheckedChapterUrl) {
                 it.lastCheckedChapterUrl = latestChapterUrl
 
-                safeUpdateName(it)
+                try {
+                    it.lastCheckedChapterName = it.checkLastChapterName() ?: throw RuntimeException("No name found in entry")
+                } catch(e: Exception) {
+                    logger.warn("Cant load latest chapter's name of [${it.name}/${it.url}]", e)
+                }
 
                 try {
                     it.lastCheckedChapterReleaseDate = it.checkLastChapterReleaseDate() ?: throw RuntimeException(noReleaseDateErrorMessage)
@@ -51,32 +55,7 @@ class BackgroundMonitor : Runnable {
                 dbConnector.updateTitle(it)
                 val activeSubscribersOfTitle = dbConnector.getSubscribersOfTitle(it)
                 notifySubscribers(activeSubscribersOfTitle, it, false)
-            } else {
-
-                try {
-                    val latestCheckedChapterReleaseDate = it.checkLastChapterReleaseDate() ?: throw RuntimeException(noReleaseDateErrorMessage)
-
-                    if (latestCheckedChapterReleaseDate != it.lastCheckedChapterReleaseDate) {
-                        it.lastCheckedChapterReleaseDate = latestCheckedChapterReleaseDate
-
-                        safeUpdateName(it)
-
-                        dbConnector.updateTitle(it)
-                        val activeSubscribersOfTitle = dbConnector.getSubscribersOfTitle(it)
-                        notifySubscribers(activeSubscribersOfTitle, it, true)
-                    }
-                } catch(e: Exception) {
-                    logger.warn(cantLoadReleaseDateErrorMessage, e)
-                }
             }
-        }
-    }
-
-    private fun safeUpdateName(it: Title) {
-        try {
-            it.lastCheckedChapterName = it.checkLastChapterName() ?: throw RuntimeException("No name found in entry")
-        } catch(e: Exception) {
-            logger.warn("Cant load latest chapter's name of [${it.name}/${it.url}]", e)
         }
     }
 

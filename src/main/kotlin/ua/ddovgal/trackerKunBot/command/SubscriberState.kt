@@ -4,7 +4,7 @@ import com.j256.ormlite.table.DatabaseTable
 
 @DatabaseTable
 enum class SubscriberState(val description: String) {
-    //    NOT_STARTED("User never uses bot before. There is no his 'Subscriber' object/row in Subscriber table"),
+    USELESS("If state is useless for some command"),
     WAITING_FOR_ANYTHING("Just started/same as just started, but after some number of command loops"),
     WAITING_FOR_ADD_STRING("Waiting for plain text at manga adding. What should to search"),
     WAITING_FOR_REMOVE_SELECTION("Waiting for /d string type at manga deleting. Which should to remove"),

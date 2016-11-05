@@ -85,14 +85,13 @@ object TrackerKunBot : TelegramLongPollingBot() {
     }
 
     /**
-     * @throws [RuntimeException] if the word, which length >= 4096 letters exist
+     * @throws [RuntimeException] if the line, which length >= 4096 letters exist
      */
-    //todo: more smart split algo
     private fun splitTextIfNeed(text: String): List<String> {
         if (text.length < 4096) return listOf(text)
 
-        val pieces = text.split(" ")
-        if (pieces.any { it.length > 4096 }) throw RuntimeException("There is word, which length is more 4096 letters")
+        val pieces = text.split("\n")
+        if (pieces.any { it.length > 4096 }) throw RuntimeException("There is line, which length is more 4096 letters")
 
         val result = mutableListOf<String>()
         val piece: StringBuilder = StringBuilder()
@@ -100,13 +99,16 @@ object TrackerKunBot : TelegramLongPollingBot() {
         pieces.forEach {
             if (currentPieceLength + it.length + 1 < 4096) {
                 currentPieceLength += it.length + 1
-                piece.append(it).append(" ")
+                piece.append(it).append("\n")
             } else {
-                currentPieceLength = 0
                 result.add(piece.toString())
+                currentPieceLength = it.length
                 piece.setLength(0)
+                piece.append(it).append("\n")
             }
         }
+
+        if (piece.isNotEmpty()) result.add(piece.substring(0, piece.lastIndex).toString())
 
         return result
     }

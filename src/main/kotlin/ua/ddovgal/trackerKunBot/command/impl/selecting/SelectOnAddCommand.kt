@@ -39,8 +39,7 @@ class SelectOnAddCommand : ParameterNeedCommand, SelectingCommand {
         try {
             selected = dbConnector.getSpecificVariantOfSubscriber(chatId, this.selected.toLong())
         } catch(e: NoSuchElementException) {
-            trackerKun.sendSimpleMessage("Wrong number ${Emoji.FACE_SCREAMING_IN_FEAR}", chatId)
-            dbConnector.updateSubscribersState(chatId, SubscriberState.WAITING_FOR_ANYTHING)
+            trackerKun.sendSimpleMessage("Wrong number ${Emoji.FACE_SCREAMING_IN_FEAR}\nTry again", chatId)
             return
         }
 

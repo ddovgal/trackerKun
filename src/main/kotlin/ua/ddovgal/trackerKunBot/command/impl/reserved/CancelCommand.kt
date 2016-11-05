@@ -15,7 +15,7 @@ class CancelCommand : ParameterNeedCommand, ReservedCommand {
     override val chatId = inputData.chatIdFromMessage
 
     //don't use state in suitability check
-    override val stateNeed = SubscriberState.WAITING_FOR_ANYTHING
+    override val stateNeed = SubscriberState.USELESS
 
     override fun extractCommandName(inputData: CommandInputData) = inputData.commandNameFromMessage
 
@@ -26,6 +26,8 @@ class CancelCommand : ParameterNeedCommand, ReservedCommand {
     override fun getIfSuitable(inputData: CommandInputData): Command? = super<ReservedCommand>.getIfSuitable(inputData)
 
     override fun exec() {
+        if (inputData.chatStateFromMessage == SubscriberState.WAITING_FOR_ADD_SELECTION)
+            dbConnector.removeVariantsOfSubscriber(chatId)
         trackerKun.sendSimpleMessage("Canceled ${Emoji.ROCKET}", chatId)
         dbConnector.updateSubscribersState(chatId, SubscriberState.WAITING_FOR_ANYTHING)
     }
