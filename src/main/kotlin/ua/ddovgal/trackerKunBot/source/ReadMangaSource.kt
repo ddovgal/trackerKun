@@ -52,7 +52,7 @@ open class ReadMangaSource : Source {
         val feed = getFeed(titleUrl)
         val title = feed.title
         val lastChapter = feed.entries.first()
-        return lastChapter.title?.replace("$title: ", "")
+        return lastChapter.title?.replace("${title.removePrefix("Манга ")}: ", "")
     }
 
     /**

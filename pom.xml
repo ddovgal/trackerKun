@@ -6,7 +6,7 @@
 
     <groupId>ua.ddovgal</groupId>
     <artifactId>TrackerKunBot</artifactId>
-    <version>1.9-RC</version>
+    <version>1.9.0.1-RC</version>
 
     <properties>
         <kotlin.version>1.0.5</kotlin.version>
