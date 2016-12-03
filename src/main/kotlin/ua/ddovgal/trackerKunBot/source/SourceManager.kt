@@ -5,9 +5,10 @@ import ua.ddovgal.trackerKunBot.entity.Title
 
 object SourceManager {
 
-    private val readManga = ReadMangaSource()
-    private val mintManga = MintMangaSource()
-    private val sources = listOf(readManga, mintManga)
+    private val sources = listOf(
+            ReadMangaSource(),
+            MintMangaSource()
+    )
 
     fun searchForTitle(name: String): List<Title> =
             sources.map { it.searchForTitle(name) }.reduce { list1, list2 -> list1.plus(list2) }

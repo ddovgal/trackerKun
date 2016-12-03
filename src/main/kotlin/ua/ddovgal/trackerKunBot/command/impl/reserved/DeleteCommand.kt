@@ -32,13 +32,13 @@ class DeleteCommand : ParameterNeedCommand, ReservedCommand {
 
         val message: String
 
-        if (subscriptions.isEmpty()) {
-            message = "There is nothing in your observable list ${Emoji.PENSIVE_FACE}"
-        } else {
-            val nothing = "${Emoji.CROSS_MARK}/0 I changed my mind :D\n"
+        if (subscriptions.isEmpty()) message = "There is nothing in your observable list ${Emoji.PENSIVE_FACE}"
+        else {
+            val none = "${Emoji.CROSS_MARK}/0 I changed my mind :D\n"
 
-            message = nothing + subscriptions.mapIndexed { i, title ->
-                "${Emoji.PAGE_WITH_CURL}/${i + 1} [${title.source.name}/" +
+            message = none + subscriptions
+                    .mapIndexed { i, title ->
+                        "${Emoji.PAGE_WITH_CURL}/${i + 1} [${title.source.name}/" +
                         "${title.source.language.shortName}] ${title.name}"
             }.joinToString(separator = "\n")
             dbConnector.updateSubscribersState(chatId, SubscriberState.WAITING_FOR_REMOVE_SELECTION)

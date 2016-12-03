@@ -17,7 +17,7 @@ data class Title(@DatabaseField val name: String,
 
     val source: Source by lazy { SourceManager.getSourceByTitleUrl(url) }
 
-    //no param constructor with just empty implementation of Source
+    //no param constructor for ORM
     constructor() : this("", "")
 
     fun checkLastChapterName() = source.checkLastChapterName(url)

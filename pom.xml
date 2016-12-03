@@ -6,10 +6,10 @@
 
     <groupId>ua.ddovgal</groupId>
     <artifactId>TrackerKunBot</artifactId>
-    <version>1.8.1-BETA</version>
+    <version>2.0-RELEASE</version>
 
     <properties>
-        <kotlin.version>1.0.4</kotlin.version>
+        <kotlin.version>1.0.5</kotlin.version>
     </properties>
 
     <dependencies>
@@ -121,6 +121,4 @@
             </plugin>
         </plugins>
     </build>
-
-
 </project>

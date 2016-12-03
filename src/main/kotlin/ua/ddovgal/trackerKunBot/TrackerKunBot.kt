@@ -41,6 +41,7 @@ object TrackerKunBot : TelegramLongPollingBot() {
             } else {
                 suitableCommand.exec()
             }
+
         } catch(e: RuntimeException) {
             val warnMessage = "There are several variants of command possible"
             val textMessage = "On update, you send, there are several variants of command possible\n" +
@@ -80,7 +81,7 @@ object TrackerKunBot : TelegramLongPollingBot() {
         try {
             sendMessage(message)
         } catch (e: TelegramApiException) {
-            logger.error("Cant send message to [${message.chatId}](text is less, than 4096 letters)")
+            logger.error("Cant send message to [${message.chatId}](text is less, than 4096 letters)", e)
         }
     }
 
@@ -96,6 +97,7 @@ object TrackerKunBot : TelegramLongPollingBot() {
         val result = mutableListOf<String>()
         val piece: StringBuilder = StringBuilder()
         var currentPieceLength = 0
+
         pieces.forEach {
             if (currentPieceLength + it.length + 1 < 4096) {
                 currentPieceLength += it.length + 1
@@ -118,13 +120,13 @@ object TrackerKunBot : TelegramLongPollingBot() {
             executor.shutdown()
             executor.awaitTermination(10, TimeUnit.SECONDS)
         } catch (e: InterruptedException) {
-            logger.warn("Tasks interrupted")
+            logger.warn("Tasks interrupted", e)
         } finally {
             if (!executor.isTerminated) {
                 logger.warn("Cancel non-finished tasks")
             }
             executor.shutdownNow()
-            logger.warn("Shutdown finished")
+            logger.info("Shutdown finished")
         }
     }
 }

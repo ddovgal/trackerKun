@@ -7,8 +7,7 @@ import ua.ddovgal.trackerKunBot.service.worker.DatabaseConnector
 
 class CommandInputData(val update: Update) {
 
-    //todo here
-    val chatIdFromMessage: Long by lazy { update.message?.chatId ?: 0 }
+    val chatIdFromMessage: Long by lazy { update.message?.chatId ?: throw RuntimeException("No chatId present") }
 
     val chatStateFromMessage: SubscriberState? by lazy {
         val chatId = update.message?.chatId
@@ -42,19 +41,4 @@ class CommandInputData(val update: Update) {
             newSubscriber.state
         }
     }
-
-//    val selectedNumberFromMessage: Int? by lazy {
-//        var result: Int? = null
-//        val text = update.message?.text
-//        text?.let {
-//            if (text.length > 1 && text[0] == '/') {
-//                val cut = text.substring(1)
-//                try {
-//                    result = cut.toInt()
-//                } catch(e: NumberFormatException) {
-//                }
-//            }
-//        }
-//        result
-//    }
 }

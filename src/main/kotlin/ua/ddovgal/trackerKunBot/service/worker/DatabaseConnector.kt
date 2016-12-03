@@ -105,15 +105,12 @@ object DatabaseConnector {
         deleteBuilder.delete()
 
         title.subscribersCount--
-        // delete, only if no one is used. Not as subscription, nor variant
+        // remove, only if nobody is used. Not as subscription, nor as variant
         if (title.subscribersCount == 0L && title.asVariantUsingCount == 0L) titleDao.delete(title)
         else titleDao.update(title)
 
         subscriber.subscriptionCount--
         subscriberDao.update(subscriber)
-        //todo: do i need to store inactive users ? do i need to clean user if it have no subscriptions ?
-        /*if (subscriber.subscriptionCount == 0) subscriberDao.delete(subscriber)
-        else subscriberDao.update(subscriber)*/
     }
 
     fun getSpecificSubscriptionOfSubscriber(chatId: Long, position: Long): Title {
@@ -152,7 +149,7 @@ object DatabaseConnector {
     }
 
     fun putVariantsForSubscriber(chatId: Long, variants: List<Title>) {
-        //empty Subscriber. It need only chatId
+        //empty Subscriber. It need only it's chatId
         val subscriber = Subscriber(chatId = chatId)
         val variantEntities = variants.mapIndexed { i, it ->
             var title = titleDao.queryForId(it.url)

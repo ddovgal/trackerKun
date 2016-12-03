@@ -21,6 +21,7 @@ class BackgroundMonitor : Runnable {
 
     private fun inspection() {
         val allActiveTitles = dbConnector.getAllPermanentTitles()
+
         allActiveTitles.forEach {
             val latestChapterUrl: String
 
@@ -34,9 +35,6 @@ class BackgroundMonitor : Runnable {
                 return@forEach
             }
 
-            val noReleaseDateErrorMessage = "No release date found in entry"
-            val cantLoadReleaseDateErrorMessage = "Cant load latest chapter's release date of [${it.name}/${it.url}]"
-
             if (latestChapterUrl != it.lastCheckedChapterUrl) {
                 it.lastCheckedChapterUrl = latestChapterUrl
 
@@ -47,9 +45,9 @@ class BackgroundMonitor : Runnable {
                 }
 
                 try {
-                    it.lastCheckedChapterReleaseDate = it.checkLastChapterReleaseDate() ?: throw RuntimeException(noReleaseDateErrorMessage)
+                    it.lastCheckedChapterReleaseDate = it.checkLastChapterReleaseDate() ?: throw RuntimeException("No release date found in entry")
                 } catch(e: Exception) {
-                    logger.warn(cantLoadReleaseDateErrorMessage, e)
+                    logger.warn("Cant load latest chapter's release date of [${it.name}/${it.url}]", e)
                 }
 
                 dbConnector.updateTitle(it)
@@ -62,6 +60,7 @@ class BackgroundMonitor : Runnable {
     private fun notifySubscribers(subscribers: List<Subscriber>, title: Title, wasUpdated: Boolean) {
         var newMessageText = "${Emoji.RAISED_HAND} Hey, new ${title.name} chapter at ${title.source.name}" +
                 "(${title.source.language.shortName}) ${Emoji.SMIRKING_FACE}\n"
+
         if (title.lastCheckedChapterName.isNotEmpty()) newMessageText += "${title.lastCheckedChapterName} " +
                 "is here ${Emoji.PARTY_POPPER}"
         else newMessageText += "And its so new, it still has no name... ${Emoji.PENSIVE_FACE}"
