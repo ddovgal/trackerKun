@@ -7,7 +7,9 @@ import ua.ddovgal.trackerKunBot.service.worker.DatabaseConnector
 
 class CommandInputData(val update: Update) {
 
-    val chatIdFromMessage: Long by lazy { update.message?.chatId ?: throw RuntimeException("No chatId present") }
+    // must throw RuntimeException("No chatId present"), but we need some value
+    // for empty command objects in CommandFactory
+    val chatIdFromMessage: Long by lazy { update.message?.chatId ?: 0 }
 
     val chatStateFromMessage: SubscriberState? by lazy {
         val chatId = update.message?.chatId
