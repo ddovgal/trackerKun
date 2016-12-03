@@ -5,7 +5,7 @@ import org.telegram.telegrambots.exceptions.TelegramApiException
 
 fun main(args: Array<String>) {
     try {
-        TelegramBotsApi().registerBot(TrackerKun())
+        TelegramBotsApi().registerBot(TrackerKunBot)
     } catch (e: TelegramApiException) {
         e.printStackTrace()
     }

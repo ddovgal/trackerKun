@@ -14,6 +14,7 @@ enum class Emoji constructor(var firstChar: Char?, var secondChar: Char?) {
     FACE_SAVOURING_DELICIOUS_FOOD('\uD83D', '\uDE0B'),
     RELIEVED_FACE('\uD83D', '\uDE0C'),
     SMILING_FACE_WITH_HEART_SHAPED_EYES('\uD83D', '\uDE0D'),
+    SMILING_FACE_WITH_SUNGLASSES('\uD83D', '\uDE0E'),
     SMIRKING_FACE('\uD83D', '\uDE0F'),
     UNAMUSED_FACE('\uD83D', '\uDE12'),
     FACE_WITH_COLD_SWEAT('\uD83D', '\uDE13'),
@@ -158,7 +159,10 @@ enum class Emoji constructor(var firstChar: Char?, var secondChar: Char?) {
     LARGE_ORANGE_DIAMOND('\uD83D', '\uDD36'),
     HUNDRED_POINTS_SYMBOL('\uD83D', '\uDCAF'),
     ROUND_PUSHPIN('\uD83D', '\uDCCD'),
-    WAVING_HAND_SIGN('\uD83D', '\uDC4B');
+    WAVING_HAND_SIGN('\uD83D', '\uDC4B'),
+    PARTY_POPPER('\uD83C', '\uDF89'),
+    ORANGE_BOOK('\uD83D', '\uDCD9'),
+    PAGE_WITH_CURL('\uD83D', '\uDCC3');
 
     override fun toString(): String {
         val sb = StringBuilder()
