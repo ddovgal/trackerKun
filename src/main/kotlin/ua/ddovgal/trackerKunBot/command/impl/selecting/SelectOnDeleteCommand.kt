@@ -26,7 +26,6 @@ class SelectOnDeleteCommand : ParameterNeedCommand, SelectingCommand {
     }
 
     override fun exec() {
-
         if (selected == 0) {
             trackerKun.sendSimpleMessage("Right choice ${Emoji.THUMBS_UP_SIGN}", chatId)
             dbConnector.updateSubscribersState(chatId, SubscriberState.WAITING_FOR_ANYTHING)
@@ -34,6 +33,7 @@ class SelectOnDeleteCommand : ParameterNeedCommand, SelectingCommand {
         }
 
         val selected: Title
+
         try {
             selected = dbConnector.getSpecificSubscriptionOfSubscriber(chatId, this.selected.toLong())
         } catch(e: NoSuchElementException) {

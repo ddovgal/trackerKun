@@ -32,11 +32,10 @@ class FindTitlesCommand : ParameterNeedCommand {
             message = "Nothing founded ${Emoji.PENSIVE_FACE}"
             newSubscriberState = SubscriberState.WAITING_FOR_ANYTHING
         } else {
-            val nothing = "${Emoji.CROSS_MARK}/0 Nothing out of this\n"
+            val none = "${Emoji.CROSS_MARK}/0 Nothing out of this\n"
 
-            message = nothing + found.mapIndexed { i, title ->
-                "${Emoji.PAGE_WITH_CURL}/${i + 1} [${title.source.name}/" +
-                        "${title.source.language.shortName}] ${title.name}"
+            message = none + found.mapIndexed { i, title ->
+                "${Emoji.PAGE_WITH_CURL}/${i + 1} [${title.source.name}/${title.source.language.shortName}] ${title.name}"
             }.joinToString(separator = "\n")
             newSubscriberState = SubscriberState.WAITING_FOR_ADD_SELECTION
         }

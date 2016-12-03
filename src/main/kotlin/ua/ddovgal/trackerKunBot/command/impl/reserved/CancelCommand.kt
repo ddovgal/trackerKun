@@ -28,6 +28,7 @@ class CancelCommand : ParameterNeedCommand, ReservedCommand {
     override fun exec() {
         if (inputData.chatStateFromMessage == SubscriberState.WAITING_FOR_ADD_SELECTION)
             dbConnector.removeVariantsOfSubscriber(chatId)
+
         trackerKun.sendSimpleMessage("Canceled ${Emoji.ROCKET}", chatId)
         dbConnector.updateSubscribersState(chatId, SubscriberState.WAITING_FOR_ANYTHING)
     }

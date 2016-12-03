@@ -4,19 +4,7 @@ import ua.ddovgal.trackerKunBot.service.TryCaughtException
 import ua.ddovgal.trackerKunBot.source.Language
 import java.util.*
 
-//@DatabaseTable
-abstract class Source {
-
-    /*@DatabaseField(id = true) */val url: String
-    /*@DatabaseField */val name: String
-    /*@DatabaseField */val language: Language
-
-    constructor() : this("", "", Language.ENGLISH)
-    constructor(url: String, name: String, language: Language) {
-        this.url = url
-        this.name = name
-        this.language = language
-    }
+abstract class Source(val url: String, val name: String, val language: Language) {
 
     /**
      * @return Last chapter release url, or 'null' if it not exist

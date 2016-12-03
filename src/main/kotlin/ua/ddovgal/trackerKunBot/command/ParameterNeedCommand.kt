@@ -13,12 +13,9 @@ abstract class ParameterNeedCommand : BaseCommand {
     protected abstract val chatId: Long
     protected abstract val stateNeed: SubscriberState
 
-    //todo here
-    protected constructor() : super() {
-        this.inputData = CommandInputData(Update())
-    }
+    protected constructor() : this(CommandInputData(Update()))
 
-    constructor(inputData: CommandInputData) : super() {
+    constructor(inputData: CommandInputData) {
         this.inputData = inputData
     }
 
@@ -28,13 +25,4 @@ abstract class ParameterNeedCommand : BaseCommand {
 
     override fun getIfSuitable(inputData: CommandInputData): Command? =
             if (stateNeed == extractState(inputData)) fabricMethod(inputData) else null
-
-/*    */
-    /**
-     * To make sure, you know, that getting [inputData] property, will produce [UninitializedPropertyAccessException]
-     */
-    /*
-        private class UpdatePropertyWillBeUninitializedException : Exception("It seems, you instantiating 'ParameterNeedCommand' " +
-                "(sub)class by its empty constructor. Than you will have 'UninitializedPropertyAccessException' " +
-                "when try to access 'update' property")*/
 }

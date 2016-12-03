@@ -5,15 +5,11 @@ interface SelectingCommand : Command {
 
     val inputData: CommandInputData
     val selected: Int
-        get() = extractSelected(inputData)
+        get() = extractSelectedNumber(inputData)
 
     fun fabricMethod(inputData: CommandInputData): SelectingCommand
 
-    companion object {
-        val NO_SELECTION = -1
-    }
-
-    fun extractSelected(inputData: CommandInputData): Int {
+    fun extractSelectedNumber(inputData: CommandInputData): Int {
         var result: Int = NO_SELECTION
         val text = inputData.update.message?.text
         text?.let {
@@ -29,5 +25,9 @@ interface SelectingCommand : Command {
     }
 
     override fun getIfSuitable(inputData: CommandInputData): Command? =
-            if (extractSelected(inputData) != NO_SELECTION) fabricMethod(inputData) else null
+            if (extractSelectedNumber(inputData) != NO_SELECTION) fabricMethod(inputData) else null
+
+    companion object {
+        val NO_SELECTION = -1
+    }
 }

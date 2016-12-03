@@ -39,18 +39,3 @@ class EasterEggCommand : ParameterNeedCommand, ReservedCommand {
     }
     //endregion
 }
-
-/*
-* // getIfSuitable realization for ParameterNeedCommand-ReservedCommand
-    override fun getIfSuitable(inputData: CommandInputData): Command? {
-        val afterCommandNameCheck = super<ReservedCommand>.getIfSuitable(inputData)
-        var afterChatIdCheck: Command? = null
-        afterCommandNameCheck?.let {
-            afterChatIdCheck = super<ParameterNeedCommand>.getIfSuitable(inputData)
-        }
-        afterChatIdCheck?.let {
-            if (it == afterCommandNameCheck) return it
-        }
-        return null
-    }
-* */

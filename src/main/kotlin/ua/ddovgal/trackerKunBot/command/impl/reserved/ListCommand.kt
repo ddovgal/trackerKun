@@ -31,9 +31,8 @@ class ListCommand : ParameterNeedCommand, ReservedCommand {
         val subscriptions = dbConnector.getSubscriptionsOfSubscriber(chatId)
 
         val message: String
-        if (subscriptions.isEmpty()) {
-            message = "Your list is empty ${Emoji.CONFOUNDED_FACE}"
-        } else message = subscriptions
+        if (subscriptions.isEmpty()) message = "Your list is empty ${Emoji.CONFOUNDED_FACE}"
+        else message = subscriptions
                 .mapIndexed { i, title ->
                     "${Emoji.PAGE_WITH_CURL}${i + 1}. " +
                             "[${title.source.name}/${title.source.language.shortName}] ${title.name}"

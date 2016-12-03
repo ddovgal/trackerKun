@@ -21,6 +21,7 @@ open class ReadMangaSource : Source {
     override fun searchForTitle(name: String): List<Title> {
         val document = Jsoup.connect("$url/search?q=$name").get()
         val blocks = document.getElementsByAttributeValue("class", "tile col-sm-6")
+
         return blocks.map {
             val titleNode = it.child(2).child(1).child(0)
             val titleName = titleNode.textNodes()[0].text()

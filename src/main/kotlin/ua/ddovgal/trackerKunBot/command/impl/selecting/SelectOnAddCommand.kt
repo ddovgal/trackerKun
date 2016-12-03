@@ -27,7 +27,6 @@ class SelectOnAddCommand : ParameterNeedCommand, SelectingCommand {
     }
 
     override fun exec() {
-
         if (selected == 0) {
             trackerKun.sendSimpleMessage("Okay... ${Emoji.DISAPPOINTED_BUT_RELIEVED_FACE}", chatId)
             dbConnector.removeVariantsOfSubscriber(chatId)
@@ -36,6 +35,7 @@ class SelectOnAddCommand : ParameterNeedCommand, SelectingCommand {
         }
 
         val selected: Title
+
         try {
             selected = dbConnector.getSpecificVariantOfSubscriber(chatId, this.selected.toLong())
         } catch(e: NoSuchElementException) {
@@ -49,7 +49,7 @@ class SelectOnAddCommand : ParameterNeedCommand, SelectingCommand {
                 selected.checkLastChapterUrl()?.let { selected.lastCheckedChapterUrl = it }
                 selected.checkLastChapterName()?.let { selected.lastCheckedChapterName = it }
                 selected.checkLastChapterReleaseDate()?.let { selected.lastCheckedChapterReleaseDate = it }
-                //don't need to update, because 'dbConnector.subscribe(selected, chatId)' will do it(subscribersCount++)
+                //don't need to update, because 'dbConnector.subscribe(selected, chatId)' will do it
                 //dbConnector.updateTitle(selected)
             } catch(e: Exception) {
                 logger.warn("Empty title has increased it's subscribers count", e)
@@ -58,13 +58,14 @@ class SelectOnAddCommand : ParameterNeedCommand, SelectingCommand {
 
         val message = try {
             dbConnector.subscribe(selected, chatId)
-            "Great ${Emoji.THUMBS_UP_SIGN}\n" +
-                    "${selected.name} was added to your observable list"
+            "Great ${Emoji.THUMBS_UP_SIGN}\n${selected.name} was added to your observable list"
         } catch(e: TryCaughtException) {
-            "It seems, that you already have ${selected.name} in your observable list ${Emoji.SMILING_FACE_WITH_SMILING_EYES}"
+            "It seems, that you already have ${selected.name} in your observable list " +
+                    "${Emoji.SMILING_FACE_WITH_SMILING_EYES}"
         } finally {
             dbConnector.removeVariantsOfSubscriber(chatId)
         }
+
         trackerKun.sendSimpleMessage(message, chatId)
         dbConnector.updateSubscribersState(chatId, SubscriberState.WAITING_FOR_ANYTHING)
     }
