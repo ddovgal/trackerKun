@@ -10,6 +10,7 @@ import ua.ddovgal.trackerKunBot.entity.Subscriber
 import ua.ddovgal.trackerKunBot.entity.Title
 import ua.ddovgal.trackerKunBot.service.Emoji
 import ua.ddovgal.trackerKunBot.service.TryCaughtException
+import java.io.IOException
 
 class BackgroundMonitor : Runnable {
 
@@ -29,6 +30,9 @@ class BackgroundMonitor : Runnable {
                 latestChapterUrl = it.checkLastChapterUrl() ?: throw RuntimeException("No url found in entry")
             } catch(e: TryCaughtException) {
                 logger.warn("There is no chapters in [${it.name}/${it.url}]")
+                return@forEach
+            } catch (e: IOException) {
+                logger.warn("Unsuccessful request to manga source [${it.name}/${it.url}]", e)
                 return@forEach
             } catch (e: Exception) {
                 logger.error("Cant load latest chapter's URL of [${it.name}/${it.url}]", e)
