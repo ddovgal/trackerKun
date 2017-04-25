@@ -37,7 +37,7 @@ class CommandInputData(val update: Update) {
             val newSubscriber = Subscriber(
                     chatId = chatId,
                     fName = update.message.chat.firstName,
-                    sName = update.message.chat.lastName
+                    sName = update.message.chat.lastName ?: ""
             )
             DatabaseConnector.saveSubscriber(newSubscriber)
             newSubscriber.state
