@@ -8,6 +8,7 @@ import ua.ddovgal.trackerKunBot.entity.Source
 import ua.ddovgal.trackerKunBot.entity.Title
 import ua.ddovgal.trackerKunBot.service.TryCaughtException
 import java.net.URL
+import java.net.URLEncoder
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -19,7 +20,8 @@ open class ReadMangaSource : Source {
     protected constructor(url: String, name: String) : super(url, name, Language.RUSSIAN)
 
     override fun searchForTitle(name: String): List<Title> {
-        val document = Jsoup.connect("$url/search?q=$name").get()
+        val nameInUTF8 = URLEncoder.encode(name, "UTF-8") //it could be not only english characters, so need to encode
+        val document = Jsoup.connect("$url/search?q=$nameInUTF8").get()
         val blocks = document.getElementsByAttributeValue("class", "tile col-sm-6")
 
         return blocks.map {
