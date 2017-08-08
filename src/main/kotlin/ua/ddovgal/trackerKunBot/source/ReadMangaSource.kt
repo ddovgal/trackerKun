@@ -24,7 +24,7 @@ open class ReadMangaSource : Source {
         val document = Jsoup.connect("$url/search?q=$nameInUTF8").get()
         val blocks = document.getElementsByAttributeValue("class", "tile col-sm-6")
 
-        return blocks.filter { !it.startsWith("http") }.map {
+        return blocks.filter { !it.child(2).child(1).child(0).attr("href").startsWith("http") }.map {
             val titleNode = it.child(2).child(1).child(0)
             val titleName = titleNode.textNodes()[0].text()
             val titleUrl = titleNode.attr("href")
