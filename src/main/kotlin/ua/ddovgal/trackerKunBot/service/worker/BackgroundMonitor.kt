@@ -5,6 +5,7 @@ import org.telegram.telegrambots.api.methods.send.SendMessage
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.exceptions.TelegramApiException
+import org.telegram.telegrambots.exceptions.TelegramApiRequestException
 import ua.ddovgal.trackerKunBot.TrackerKunBot
 import ua.ddovgal.trackerKunBot.entity.Subscriber
 import ua.ddovgal.trackerKunBot.entity.Title
@@ -65,9 +66,9 @@ class BackgroundMonitor : Runnable {
         var newMessageText = "${Emoji.RAISED_HAND} Hey, new ${title.name} chapter at ${title.source.name}" +
                 "(${title.source.language.shortName}) ${Emoji.SMIRKING_FACE}\n"
 
-        if (title.lastCheckedChapterName.isNotEmpty()) newMessageText += "${title.lastCheckedChapterName} " +
+        newMessageText += if (title.lastCheckedChapterName.isNotEmpty()) "${title.lastCheckedChapterName} " +
                 "is here ${Emoji.PARTY_POPPER}"
-        else newMessageText += "And its so new, it still has no name... ${Emoji.PENSIVE_FACE}"
+        else "And its so new, it still has no name... ${Emoji.PENSIVE_FACE}"
 
         val updateMessageText = "${Emoji.RAISED_HAND} Hey, latest ${title.name} chapter at ${title.source.name}" +
                 "(${title.source.language.shortName}) was updated ${Emoji.SMILING_FACE_WITH_SUNGLASSES}\n" +
@@ -89,6 +90,11 @@ class BackgroundMonitor : Runnable {
             message.chatId = it.chatId.toString()
             try {
                 botInstance.sendMessage(message)
+            } catch (e: TelegramApiRequestException) {
+                if (e.errorCode == 403) {
+//                    dbConnector.unsubscribe(title, it.chatId)
+                    logger.debug("Bot was blocked by user", e)
+                } else throw e
             } catch(e: TelegramApiException) {
                 logger.error("Cant send message", e)
             }
