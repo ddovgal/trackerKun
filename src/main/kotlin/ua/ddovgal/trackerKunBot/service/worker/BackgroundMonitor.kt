@@ -38,6 +38,8 @@ class BackgroundMonitor : Runnable {
             } catch (e: Exception) {
                 logger.error("Cant load latest chapter's URL of [${it.name}/${it.url}]", e)
                 return@forEach
+            } finally { //need this because there may be 429 HTTP response, which means "Too Many Requests"
+                Thread.sleep(500) //so just wait a half of second
             }
 
             if (latestChapterUrl != it.lastCheckedChapterUrl) {
