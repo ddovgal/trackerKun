@@ -21,7 +21,7 @@ open class ReadMangaSource : Source {
 
     override fun searchForTitle(name: String): List<Title> {
         val nameInUTF8 = URLEncoder.encode(name, "UTF-8") //it could be not only english characters, so need to encode
-        val document = Jsoup.connect("$url/search?q=$nameInUTF8").get()
+        val document = Jsoup.connect("$url/search").data("q", nameInUTF8).post()
         val blocks = document.getElementsByAttributeValue("class", "tile col-sm-6")
 
         return blocks.filter { !it.child(2).child(1).child(0).attr("href").startsWith("http") }.map {
