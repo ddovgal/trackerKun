@@ -1,5 +1,5 @@
 # Tracker kun [![Telegram](https://cdn0.iconfinder.com/data/icons/social-media-2092/100/social-56-32.png)](http://telegram.me/TrackerKun_bot)
-## It is the old version. New v2 will be [here](https://github.com/ddovgal/tracker-kun) soon
+## It is the old version. New v2 will be [here](https://github.com/ddovgal/mangatsuchi) soon
 
 #### Simple telegram bot to track manga chapters
 
